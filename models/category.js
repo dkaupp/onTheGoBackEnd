@@ -8,6 +8,10 @@ const categorySchema = new mongoose.Schema({
     lowercase: true,
     required: true,
   },
+  date: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
 const Category = mongoose.model("category", categorySchema);

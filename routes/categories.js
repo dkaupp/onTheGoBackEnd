@@ -4,22 +4,33 @@ const Joi = require("joi");
 const { Category } = require("../models/category");
 const auth = require("../middleware/auth");
 const validateWith = require("../middleware/validation");
+const validateObjectId = require("../middleware/validateObjectId");
 
 const schema = Joi.object({
   name: Joi.string().min(3).max(50).required(),
   _id: Joi.objectId(),
 });
 
-router.get("/", validateWith(schema), async (req, res) => {
-  const categories = await Caregory.find();
+router.get("/", async (req, res) => {
+  const categories = await Category.find();
   if (!categories) {
-    return res.status(400).send("There are no categories in the database.");
+    return res
+      .status(400)
+      .send({ error: "There are no categories in the database." });
   }
 
   res.status(200).send(categories);
 });
 
-router.post("/", async (req, res) => {
+router.get("/:id", validateObjectId, async (req, res) => {
+  const category = await Category.findById(req.params.id);
+
+  if (!category) return res.status(400).send({ error: "Invalid category." });
+
+  return res.status(200).send(category);
+});
+
+router.post("/", validateWith(schema), async (req, res) => {
   const { name } = req.body;
   const _id = req.body._id || undefined;
 
@@ -27,7 +38,7 @@ router.post("/", async (req, res) => {
   if (category) {
     const updatedCategory = await Category.findByIdAndUpdate(
       { _id },
-      { $set: { name } },
+      { $set: { name, date: Date.now() } },
       { new: true }
     );
 
@@ -38,6 +49,13 @@ router.post("/", async (req, res) => {
   await newCategory.save();
 
   res.send(newCategory);
+});
+
+router.delete("/:id", validateObjectId, async (req, res) => {
+  const category = await Category.findByIdAndRemove(req.params.id);
+  if (!category) return res.status(400).send({ error: "Category not found." });
+
+  res.status(200).send(category);
 });
 
 module.exports = router;
