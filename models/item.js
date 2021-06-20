@@ -52,6 +52,6 @@ const itemSchema = new mongoose.Schema({
   },
 });
 
-const Item = new mongoose.model("item", itemSchema);
+const Item = mongoose.model("item", itemSchema);
 
 exports.Item = Item;

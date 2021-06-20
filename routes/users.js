@@ -9,7 +9,7 @@ const { User } = require("../models/user");
 
 const schema = Joi.object({
   name: Joi.string().min(5).max(50).required(),
-  email: Joi.string().min(5).max(255).required().email(),
+  email: Joi.string().min(5).max(255).required().email().lowercase(),
   password: Joi.string().min(5).max(255).required(),
 });
 
@@ -17,7 +17,7 @@ router.post("/", validateWith(schema), async (req, res) => {
   const { email } = req.body;
   let user = await User.findOne({ email });
 
-  if (user) return res.status(400).send("User already registered.");
+  if (user) return res.status(400).send({ error: "User already registered." });
 
   user = new User(req.body);
 
