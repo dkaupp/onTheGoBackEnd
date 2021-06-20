@@ -5,6 +5,7 @@ const { Category } = require("../models/category");
 const auth = require("../middleware/auth");
 const validateWith = require("../middleware/validation");
 const validateObjectId = require("../middleware/validateObjectId");
+const isAdmin = require("../middleware/isAdmin");
 
 const schema = Joi.object({
   name: Joi.string().min(3).max(50).required(),
@@ -30,7 +31,7 @@ router.get("/:id", validateObjectId, async (req, res) => {
   return res.status(200).send(category);
 });
 
-router.post("/", validateWith(schema), async (req, res) => {
+router.post("/", [validateWith(schema), auth, isAdmin], async (req, res) => {
   const { name } = req.body;
   const _id = req.body._id || undefined;
 
@@ -51,7 +52,7 @@ router.post("/", validateWith(schema), async (req, res) => {
   res.send(newCategory);
 });
 
-router.delete("/:id", validateObjectId, async (req, res) => {
+router.delete("/:id", [validateObjectId, auth, isAdmin], async (req, res) => {
   const category = await Category.findByIdAndRemove(req.params.id);
   if (!category) return res.status(400).send({ error: "Category not found." });
 
