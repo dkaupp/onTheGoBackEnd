@@ -5,6 +5,7 @@ const categories = require("../routes/categories");
 const items = require("../routes/items");
 const customer = require("../routes/customer");
 const order = require("../routes/order");
+const cart = require("../routes/cart");
 
 module.exports = (app) => {
   app.use("/api/users", users);
@@ -13,5 +14,6 @@ module.exports = (app) => {
   app.use("/api/items", items);
   app.use("/api/customer", customer);
   app.use("/api/order", order);
+  app.use("/api/cart", cart);
   app.use(error);
 };
