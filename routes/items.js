@@ -16,7 +16,6 @@ const schema = Joi.object({
   categoryId: Joi.objectId().required(),
   price: Joi.number().min(0).required(),
   stock: Joi.number().min(0).required(),
-  discount: Joi.number().min(0).max(100),
   description: Joi.string().min(10).max(255),
   isAvailable: Joi.boolean(),
 });
@@ -49,7 +48,7 @@ router.post(
   ],
   async (req, res) => {
     console.log(req.body.name);
-    const { name, categoryId, price, stock, discount, description } = req.body;
+    const { name, categoryId, price, stock, description } = req.body;
 
     const categoryItem = await Category.findById(categoryId);
 
@@ -60,7 +59,6 @@ router.post(
       name,
       price: parseFloat(price),
       stock: parseInt(stock),
-      discount: parseFloat(discount),
       category: categoryItem,
       description,
     });
@@ -99,7 +97,7 @@ router.put(
     if (!item)
       return res.status(400).send({ error: "The item was not found." });
 
-    const { name, categoryId, price, stock, discount, description } = req.body;
+    const { name, categoryId, price, stock, description } = req.body;
 
     const categoryItem = await Category.findById(categoryId);
 
@@ -107,7 +105,6 @@ router.put(
     item.category = categoryItem;
     item.price = parseFloat(price);
     item.stock = parseInt(stock);
-    item.discount = parseFloat(discount);
     item.description = description;
 
     item.images = req.files.map((file) => ({

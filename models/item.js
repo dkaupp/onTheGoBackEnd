@@ -17,11 +17,6 @@ const itemSchema = new mongoose.Schema({
     min: 0,
     required: true,
   },
-  discount: {
-    type: Number,
-    max: 100,
-    min: 0,
-  },
   stock: {
     type: Number,
     min: 0,
@@ -54,4 +49,5 @@ const itemSchema = new mongoose.Schema({
 
 const Item = mongoose.model("item", itemSchema);
 
+exports.itemSchema = itemSchema;
 exports.Item = Item;

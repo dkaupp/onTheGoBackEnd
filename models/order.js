@@ -5,7 +5,7 @@ const orderSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "customer",
   },
-  items: {
+  cart: {
     type: Object,
     required: true,
   },
