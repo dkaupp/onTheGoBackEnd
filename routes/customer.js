@@ -6,6 +6,7 @@ const auth = require("../middleware/auth");
 const validateId = require("../middleware/validateObjectId");
 
 const { Customer } = require("../models/customer");
+const { User } = require("../models/user");
 
 const customerSchema = Joi.object({
   _id: Joi.objectId(),
@@ -15,22 +16,24 @@ const customerSchema = Joi.object({
 
 const addressSchema = Joi.object({
   _id: Joi.objectId(),
-  street: Joi.string().min(5).max(255).required(),
-  location: Joi.string().min(5).max(255).required(),
-  number: Joi.number().min(0).required(),
+  address: Joi.string().min(5).max(255).required(),
+  city: Joi.string().min(5).max(255).required(),
+  postalCode: Joi.string().min(5).required(),
+  country: Joi.string().required(),
 });
 
 router.post("/", [auth, validateWith(customerSchema)], async (req, res) => {
   const userId = req.user._id;
   const { name, phone } = req.body;
 
-  console.log(userId);
-
   const customerFields = {};
+
+  const user = await User.findById(userId);
 
   customerFields.name = name;
   customerFields.phone = phone;
   customerFields.user = userId;
+  customerFields.email = user.email;
   customerFields.address = [];
 
   const customer = await Customer.findOne({ user: userId });
@@ -55,19 +58,20 @@ router.post(
   "/address",
   [auth, validateWith(addressSchema)],
   async (req, res) => {
-    const { street, location, number } = req.body;
+    const { address, city, postalCode, country } = req.body;
     const newAddress = {
-      street,
-      location,
-      number,
+      address,
+      city,
+      postalCode,
+      country,
     };
 
     let customer = await Customer.findOne({ user: req.user._id });
     if (!customer) return res.status(400).send({ error: "User not found." });
 
-    console.log(customer.address);
+    console.log(customer.shippingAddress);
 
-    customer.address = [...customer.address, newAddress];
+    customer.shippingAddress = [...customer.shippingAddress, newAddress];
     customer = await customer.save();
 
     res.send(customer);

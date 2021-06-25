@@ -47,7 +47,6 @@ router.post(
     validateWith(schema),
   ],
   async (req, res) => {
-    console.log(req.body.name);
     const { name, categoryId, price, stock, description } = req.body;
 
     const categoryItem = await Category.findById(categoryId);
