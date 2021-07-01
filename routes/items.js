@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { Item } = require("../models/item");
+const shart = require("sharp");
 
 const Joi = require("joi");
 const auth = require("../middleware/auth");
@@ -8,8 +9,10 @@ const isAdmin = require("../middleware/isAdmin");
 const validateObjectId = require("../middleware/validateObjectId");
 const validateWith = require("../middleware/validation");
 const config = require("config");
-const upload = require("../middleware/fileUpload");
+const upload = require("../utils/multer");
+const cloudinary = require("../utils/cloudinary");
 const { Category } = require("../models/category");
+const sharp = require("sharp");
 
 const schema = Joi.object({
   name: Joi.string().min(2).max(80).required(),
@@ -43,7 +46,7 @@ router.post(
   [
     auth,
     isAdmin,
-    upload.array("images", config.get("maxImageCount")),
+    upload.single("image"),
     validateWith(schema),
   ],
   async (req, res) => {
@@ -62,10 +65,12 @@ router.post(
       description,
     });
 
-    item.images = req.files.map((file) => ({
-      url: file.transforms[1].location,
-      thumbnailUrl: file.transforms[0].location,
-    }));
+    const result = await cloudinary.uploader.upload(req.file.path);
+
+    item.image = {
+      url: result.secure_url,
+      thumbnailUrl: result.result_url
+    };
 
     item = await item.save();
 

@@ -27,8 +27,7 @@ const itemSchema = new mongoose.Schema({
     minlength: 10,
     maxlength: 255,
   },
-  images: [
-    {
+  image: {
       url: {
         type: String,
       },
@@ -36,7 +35,6 @@ const itemSchema = new mongoose.Schema({
         type: String,
       },
     },
-  ],
   isAvailable: {
     type: Boolean,
     default: true,
