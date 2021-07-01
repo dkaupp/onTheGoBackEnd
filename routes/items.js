@@ -66,9 +66,6 @@ router.post(
       description,
     });
 
-    console.log(req.imageOriginal)
-    console.log(req.imageThumb)
-
     const original = await cloudinary.uploader.upload(req.imageOriginal);
     const thumb = await cloudinary.uploader.upload(req.imageThumb);
     
@@ -91,40 +88,45 @@ router.delete("/:id", [auth, isAdmin, validateObjectId], async (req, res) => {
   res.status(200).send(item);
 });
 
-// router.put(
-//   "/:id",
-//   [
-//     auth,
-//     isAdmin,
-//     upload.array("images", config.get("maxImageCount")),
-//     validateWith(schema),
-//     validateObjectId,
-//   ],
-//   async (req, res) => {
-//     let item = await Item.findById(req.params.id);
+router.put(
+  "/:id",
+  [
+    auth,
+    isAdmin,
+    upload.single("image"),
+    validateWith(schema),
+    validateObjectId,
+    imageResize
+  ],
+  async (req, res) => {
+    let item = await Item.findById(req.params.id);
 
-//     if (!item)
-//       return res.status(400).send({ error: "The item was not found." });
+    if (!item)
+      return res.status(400).send({ error: "The item was not found." });
 
-//     const { name, categoryId, price, stock, description } = req.body;
+    const { name, categoryId, price, stock, description } = req.body;
 
-//     const categoryItem = await Category.findById(categoryId);
+    const categoryItem = await Category.findById(categoryId);
 
-//     item.name = name;
-//     item.category = categoryItem;
-//     item.price = parseFloat(price);
-//     item.stock = parseInt(stock);
-//     item.description = description;
+    item.name = name;
+    item.category = categoryItem;
+    item.price = parseFloat(price);
+    item.stock = parseInt(stock);
+    item.description = description;
 
-//     item.images = req.files.map((file) => ({
-//       url: file.transforms[1].location,
-//       thumbnailUrl: file.transforms[0].location,
-//     }));
+    const original = await cloudinary.uploader.upload(req.imageOriginal);
+    const thumb = await cloudinary.uploader.upload(req.imageThumb);
+    
+    item.image = {
+      url: original.secure_url,
+      thumbnailUrl: thumb.secure_url
+    };
 
-//     item = await item.save();
 
-//     return res.status(200).send(item);
-//   }
-// );
+    item = await item.save();
+
+    return res.status(200).send(item);
+  }
+);
 
 module.exports = router;

@@ -8,13 +8,13 @@ module.exports = async (req, res, next) => {
   const {file} = req;
 
     await sharp(file.path)
-      .resize(2000)
-      .jpeg({ quality: 50 })
+      .resize(1000)
+      .jpeg({ quality: 80 })
       .toFile(path.resolve(outputFolder, file.filename + "_full.jpg"));
 
     await sharp(file.path)
-      .resize(100)
-      .jpeg({ quality: 30 })
+      .resize(200)
+      .jpeg({ quality: 50 })
       .toFile(path.resolve(outputFolder, file.filename + "_thumb.jpg"));
 
     fs.unlinkSync(file.path);
