@@ -4,34 +4,34 @@ class Cart {
     this.totalAmount = oldCart.totalAmount || 0;
     this.totalQuantity = oldCart.totalQuantity || 0;
   }
-  addItemCart(item, qty) {
+  addItemCart(item) {
     if (this.cart.length > 0) {
       const id = item._id;
       const index = this.cart.findIndex((i) => {
         return i.item._id == id;
       });
       if (index == -1) {
-        this.addItem(item, qty);
+        this.addItem(item);
       } else {
-        this.updateCartItem(id, "+", qty);
+        this.updateCartItem(id, "+");
       }
     } else {
-      this.addItem(item, qty);
+      this.addItem(item);
     }
   }
 
-  addItem(item, qty) {
-    this.cart = [...this.cart, { item, quantity: qty }];
+  addItem(item) {
+    this.cart = [...this.cart, { item, quantity: 1 }];
     this.totalQuantity = total(this.cart).qty;
     this.totalAmount = total(this.cart).ammount;
   }
 
-  updateCartItem(id, operator, qty) {
+  updateCartItem(id, operator) {
     const cart = this.cart.map((i) => {
       return i.item._id == id
         ? (i = {
             ...i,
-            quantity: operator === "+" ? i.quantity + qty : i.quantity - qty,
+            quantity: operator === "+" ? i.quantity + 1 : i.quantity - 1,
           })
         : i;
     });
@@ -40,14 +40,14 @@ class Cart {
     this.totalAmount = total(this.cart).ammount;
   }
 
-  removeItem(id, operator, qty) {
+  removeItem(id, operator) {
     const item = this.cart.find((i) => i.item._id === id);
     if (!item) return;
-    if (item.quantity == qty && operator === "-") {
-      this.updateCartItem(id, operator, qty);
+    if (item.quantity == 1 && operator === "-") {
+      this.updateCartItem(id, operator);
       this.removeCartItem(id);
     } else {
-      this.updateCartItem(id, operator, qty);
+      this.updateCartItem(id, operator);
     }
   }
 
@@ -65,14 +65,11 @@ class Cart {
 }
 
 const total = (cart) => {
-  if (!cart.length) return { ammount: 0, qty: 0 };
   const totalAmount = cart
     .map((i) => {
       return i.item.price * i.quantity;
     })
-    .reduce((a, b) => {
-      return a + b;
-    });
+    .reduce((a, b) => a + b);
   const totalQuantity = cart.map((i) => i.quantity).reduce((a, b) => a + b);
 
   return { ammount: Number(totalAmount.toFixed(2)), qty: totalQuantity };
