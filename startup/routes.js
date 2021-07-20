@@ -15,5 +15,8 @@ module.exports = (app) => {
   app.use("/api/customer", customer);
   app.use("/api/order", order);
   app.use("/api/cart", cart);
+  app.use("/api/config/paypal", (req, res) =>
+    res.send(process.env.PAYPAL_CLIENT_ID)
+  );
   app.use(error);
 };

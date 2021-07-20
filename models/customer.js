@@ -11,12 +11,6 @@ const customerSchema = new mongoose.Schema({
     maxlength: 50,
     required: true,
   },
-  phone: {
-    type: String,
-    required: true,
-    minlength: 5,
-    maxlength: 50,
-  },
   email: {
     type: String,
     required: true,
@@ -25,17 +19,13 @@ const customerSchema = new mongoose.Schema({
     unique: true,
   },
   shippingAddress: {
-    type: [
-      {
-        address: {
-          type: String,
-          required: true,
-        },
-        city: { type: String, required: true },
-        postalCode: { type: String, required: true },
-        country: { type: String, required: true },
-      },
-    ],
+    address: {
+      type: String,
+      required: true,
+    },
+    city: { type: String, required: true },
+    postalCode: { type: String, required: true },
+    country: { type: String, required: true },
   },
 });
 

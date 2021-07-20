@@ -1,3 +1,4 @@
+const { truncate } = require("lodash");
 const mongoose = require("mongoose");
 
 const orderSchema = new mongoose.Schema(
@@ -23,6 +24,9 @@ const orderSchema = new mongoose.Schema(
       type: String,
       default: "Pending",
     },
+    deliveredAt: {
+      type: Date,
+    },
     isPaid: {
       type: Boolean,
       required: true,
@@ -42,12 +46,20 @@ const orderSchema = new mongoose.Schema(
       status: {
         type: String,
       },
-      updated_time: {
+      update_time: {
         type: String,
       },
       email_address: {
         type: String,
       },
+    },
+    subTotal: {
+      type: Number,
+      required: true,
+    },
+    shippingPrice: {
+      type: Number,
+      required: true,
     },
     orderTotal: {
       type: Number,

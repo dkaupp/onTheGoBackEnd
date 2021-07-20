@@ -8,11 +8,10 @@ const auth = require("../middleware/auth");
 const isAdmin = require("../middleware/isAdmin");
 const validateObjectId = require("../middleware/validateObjectId");
 const validateWith = require("../middleware/validation");
-const config = require("config");
 const upload = require("../utils/multer");
 const cloudinary = require("../utils/cloudinary");
 const { Category } = require("../models/category");
-const imageResize = require("../middleware/imageResize")
+const imageResize = require("../middleware/imageResize");
 
 const schema = Joi.object({
   name: Joi.string().min(2).max(80).required(),
@@ -21,6 +20,10 @@ const schema = Joi.object({
   stock: Joi.number().min(0).required(),
   description: Joi.string().min(10).max(255),
   isAvailable: Joi.boolean(),
+});
+
+const reviewSchema = Joi.object({
+  rating: Joi.number().required(),
 });
 
 router.get("/", async (req, res) => {
@@ -43,13 +46,7 @@ router.get("/:id", validateObjectId, async (req, res) => {
 
 router.post(
   "/",
-  [
-    auth,
-    isAdmin,
-    upload.single("image"),
-    validateWith(schema),
-    imageResize
-  ],
+  [auth, isAdmin, upload.single("image"), validateWith(schema), imageResize],
   async (req, res) => {
     const { name, categoryId, price, stock, description } = req.body;
 
@@ -59,19 +56,21 @@ router.post(
       return res.status(404).send({ error: "Ivalid category" });
 
     let item = new Item({
+      user: req.user._id,
       name,
       price: parseFloat(price),
       stock: parseInt(stock),
       category: categoryItem,
       description,
+      numReviews: 0,
     });
 
     const original = await cloudinary.uploader.upload(req.imageOriginal);
     const thumb = await cloudinary.uploader.upload(req.imageThumb);
-    
+
     item.image = {
       url: original.secure_url,
-      thumbnailUrl: thumb.secure_url
+      thumbnailUrl: thumb.secure_url,
     };
 
     item = await item.save();
@@ -96,8 +95,44 @@ router.put(
     upload.single("image"),
     validateWith(schema),
     validateObjectId,
-    imageResize
+    imageResize,
   ],
+  async (req, res) => {
+    let item = await Item.findById(req.params.id);
+
+    if (!item)
+      return res.status(400).send({ error: "The item was not found." });
+
+    const { name, categoryId, price, stock, description } = req.body;
+
+    const categoryItem = await Category.findById(categoryId);
+
+    item.user = req.user._id;
+    item.name = name;
+    item.category = categoryItem;
+    item.price = parseFloat(price);
+    item.stock = parseInt(stock);
+    item.description = description;
+
+    console.log(item);
+
+    const original = await cloudinary.uploader.upload(req.imageOriginal);
+    const thumb = await cloudinary.uploader.upload(req.imageThumb);
+
+    item.image = {
+      url: original.secure_url,
+      thumbnailUrl: thumb.secure_url,
+    };
+
+    item = await item.save();
+
+    return res.status(200).send(item);
+  }
+);
+
+router.put(
+  "/:id/noimage",
+  [auth, isAdmin, upload.none(), validateWith(schema), validateObjectId],
   async (req, res) => {
     let item = await Item.findById(req.params.id);
 
@@ -114,14 +149,44 @@ router.put(
     item.stock = parseInt(stock);
     item.description = description;
 
-    const original = await cloudinary.uploader.upload(req.imageOriginal);
-    const thumb = await cloudinary.uploader.upload(req.imageThumb);
-    
-    item.image = {
-      url: original.secure_url,
-      thumbnailUrl: thumb.secure_url
+    item = await item.save();
+
+    return res.status(200).send(item);
+  }
+);
+
+router.post(
+  "/:id/reviews",
+  [auth, upload.none(), validateWith(reviewSchema), validateObjectId],
+  async (req, res) => {
+    let item = await Item.findById(req.params.id);
+
+    if (!item)
+      return res.status(400).send({ error: "The item was not found." });
+
+    const { rating } = req.body;
+
+    const hasReviewed = item.reviews.find(
+      (r) => r.user.toString() === req.user._id.toString()
+    );
+
+    if (hasReviewed)
+      return res
+        .status(400)
+        .send({ error: "You had reviewed the product already" });
+
+    const review = {
+      name: req.user.name,
+      rating: parseInt(rating),
+      user: req.user._id,
     };
 
+    console.log(review);
+
+    item.reviews.push(review);
+    item.numReviews = item.reviews.length;
+    item.rating =
+      item.reviews.reduce((a, b) => b.rating + a, 0) / item.reviews.length;
 
     item = await item.save();
 

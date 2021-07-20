@@ -38,7 +38,10 @@ userSchema.methods.generateAuthToken = function () {
       name: this.name,
       isAdmin: this.isAdmin,
     },
-    process.env.JWT_KEY
+    process.env.JWT_KEY,
+    {
+      expiresIn: "10d",
+    }
   );
   return token;
 };

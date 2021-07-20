@@ -52,7 +52,7 @@ class Cart {
   }
 
   removeCartItem(id) {
-    this.cart = [...this.cart.filter((i) => i.item._id != id)];
+    this.cart = [...this.cart.filter((i) => i.item._id.toString() != id)];
     this.totalAmount = total(this.cart).ammount;
     this.totalQuantity = total(this.cart).qty;
   }
@@ -79,3 +79,15 @@ const total = (cart) => {
 };
 
 exports.Cart = Cart;
+
+const cart = new Cart([]);
+
+// cart.addItemCart({ _id: "12234", name: "somethign", price: 200 }, 3);
+// cart.addItemCart({ _id: "12235", name: "else", price: 100 }, 3);
+// cart.addItemCart({ _id: "12236", name: "anotherone", price: 500 }, 6);
+
+// cart.removeCartItem("12236");
+
+// console.log(cart);
+
+// cart.cart.map((i) => console.log(i));

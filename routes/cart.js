@@ -25,6 +25,8 @@ router.post("/:id", [validateObjectId, cartToken], async (req, res) => {
     "category.name",
     "price",
     "stock",
+    "image",
+    "description",
   ]);
   if (!item) return res.status(400).send({ error: "Item not found." });
   if (item.stock === 0) return res.status(400).send({ error: "Out of stock." });
@@ -47,19 +49,17 @@ router.put("/:id", [validateObjectId, cartToken], async (req, res) => {
   res.status(200).send(token);
 });
 
-router.delete(
-  "/delete/:id",
-  [validateObjectId, cartToken],
-  async (req, res) => {
-    const _id = req.params.id;
-    const cart = new Cart(
-      Object.keys(req.cart.items).length > 0 ? req.cart.items.cart : []
-    );
-    cart.removeCartItem(_id);
-    const token = signCartToken(cart);
-    res.status(200).send(token);
-  }
-);
+router.put("/delete/:id", [validateObjectId, cartToken], async (req, res) => {
+  const _id = req.params.id;
+
+  const cart = new Cart(
+    Object.keys(req.cart.items).length > 0 ? req.cart.items.cart : []
+  );
+
+  cart.removeCartItem(_id);
+  const token = signCartToken(cart);
+  res.status(200).send(token);
+});
 
 router.delete("/", cartToken, async (req, res) => {
   const cart = new Cart([]);
