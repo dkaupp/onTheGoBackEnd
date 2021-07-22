@@ -8,6 +8,7 @@ require("./startup/config")();
 require("./startup/logging");
 require("./startup/db")();
 require("./startup/validation")();
+require("./startup/prod")(app);
 require("./startup/routes")(app);
 
 const PORT = process.env.PORT || 5000;

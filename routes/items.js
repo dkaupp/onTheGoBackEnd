@@ -24,6 +24,7 @@ const schema = Joi.object({
 
 const reviewSchema = Joi.object({
   rating: Joi.number().required(),
+  comment: Joi.string().min(5).max(200).required(),
 });
 
 router.get("/", async (req, res) => {
@@ -164,7 +165,7 @@ router.post(
     if (!item)
       return res.status(400).send({ error: "The item was not found." });
 
-    const { rating } = req.body;
+    const { rating, comment } = req.body;
 
     const hasReviewed = item.reviews.find(
       (r) => r.user.toString() === req.user._id.toString()
@@ -173,12 +174,13 @@ router.post(
     if (hasReviewed)
       return res
         .status(400)
-        .send({ error: "You had reviewed the product already" });
+        .send({ error: "You reviewed the product already" });
 
     const review = {
       name: req.user.name,
       rating: parseInt(rating),
       user: req.user._id,
+      comment,
     };
 
     console.log(review);
@@ -190,7 +192,7 @@ router.post(
 
     item = await item.save();
 
-    return res.status(200).send(item);
+    return res.status(200).send({ message: "Review Added" });
   }
 );
 
